@@ -66,7 +66,7 @@ class CartSerializer(serializers.ModelSerializer):
         fields = ['id', 'items', 'total_price']
 
     id = serializers.UUIDField(read_only=True)
-    items = CartItemSerializer(many=True)
+    items = CartItemSerializer(many=True, read_only=True)
     total_price = serializers.SerializerMethodField(
         method_name='get_total_price')
 
@@ -135,3 +135,15 @@ class OrderSerializer(serializers.ModelSerializer):
         fields = ['id', 'customer', 'placed_at', 'payment_status', 'items']
 
     items = OrderItemSerializer(many=True)
+
+
+class CreateOrderSerializer(serializers.Serializer):
+    cart_id = serializers.UUIDField()
+
+    def save(self, **kwargs):
+        print(self.validated_data['cart_id'])
+        print(self.context['user_id'])
+
+        (customer, created) = Customer.objects.get_or_create(
+            user_id=self.context['user_id'])
+        Order.objects.create(customer=customer)
